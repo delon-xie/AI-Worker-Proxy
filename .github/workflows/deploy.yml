@@ -22,12 +22,12 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: latest
+          version: 9   # 固定 pnpm 9.x，完全兼容 Node 22
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '22.x'  # 使用最新的 Node 22 补丁版本
           cache: 'pnpm'
 
       - name: Install dependencies
@@ -63,25 +63,28 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: latest
+          version: 9   # 固定 pnpm 9.x
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: '22.x'
           cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install
 
+      # 可选：打印环境信息便于调试
+      - name: Show Node.js & pnpm versions
+        run: |
+          node --version
+          pnpm --version
+
       - name: Replace ROUTES_CONFIG in wrangler.toml
         env:
           ROUTES_CONFIG: ${{ vars.ROUTES_CONFIG }}
         run: |
-          # Remove existing [vars] section and everything after it
           sed -i '/^\[vars\]/,$d' wrangler.toml
-
-          # Add new [vars] section with GitHub Variable
           cat >> wrangler.toml << EOF
 
           [vars]
@@ -89,7 +92,7 @@ jobs:
           EOF
 
       - name: Deploy to Cloudflare Workers
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v4   # 升级到 v4，原生支持 Node 22
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
